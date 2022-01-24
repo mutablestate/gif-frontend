@@ -5,13 +5,15 @@
 
   import { walletAddress } from "./stores";
 
-  import { Connection, PublicKey, clusterApiUrl } from "@solana/web3.js";
-  import { Program, Provider, web3 } from "@project-serum/anchor";
+  import * as solanaWeb3 from "@solana/web3.js";
+  import * as anchorWeb3 from "@project-serum/anchor";
 
   import kp from "./keypair.json";
   import idl from "./idl.json";
   // SystemProgram is a reference to the Solana runtime!
-  const { SystemProgram } = web3;
+  const { SystemProgram } = solanaWeb3;
+  const { Connection, PublicKey, clusterApiUrl } = solanaWeb3;
+  const { Program, Provider, web3 } = anchorWeb3;
 
   const arr = Object.values(kp._keypair.secretKey);
   const secret = new Uint8Array(arr);
