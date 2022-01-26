@@ -3,26 +3,26 @@
   import { Buffer } from "buffer";
   window.Buffer = Buffer;
 
-  import { walletAddress } from "./stores";
+  import Toast from "./lib/Toast.svelte";
+  import { notifications } from "./lib/notificationStore";
+  import { walletAddress, currentStatus } from "./stores";
+  import { shortenAddress } from "./utils";
 
   import * as solanaWeb3 from "@solana/web3.js";
   import * as anchorWeb3 from "@project-serum/anchor";
 
   import kp from "./keypair.json";
   import idl from "./idl.json";
+
   // SystemProgram is a reference to the Solana runtime!
-  const { SystemProgram } = solanaWeb3;
-  const { Connection, PublicKey, clusterApiUrl } = solanaWeb3;
+  const { SystemProgram, Connection, PublicKey, clusterApiUrl } = solanaWeb3;
   const { Program, Provider, web3 } = anchorWeb3;
 
   const arr = Object.values(kp._keypair.secretKey);
   const secret = new Uint8Array(arr);
   const baseAccount = web3.Keypair.fromSecretKey(secret);
 
-  // Get our program's id from the IDL file.
   const programID = new PublicKey(idl.metadata.address);
-
-  // Set our network to devnet.
   const network = clusterApiUrl("devnet");
 
   // Controls how we want to acknowledge when a transaction is "done".
@@ -30,19 +30,9 @@
     preflightCommitment: "processed",
   };
 
-  const TEST_GIFS = [
-    "https://media.giphy.com/media/RI4LTRjrVJhTskGtrb/giphy.webp",
-    "https://media.giphy.com/media/KhgowdbbeG0LK/giphy.webp",
-    "https://media.giphy.com/media/UFzjusdrC1EOc/giphy.webp",
-    "https://media.giphy.com/media/qu1GssFpndjDq/giphy.webp",
-    "https://media.giphy.com/media/3s976LBmflJ17QqV7M/giphy.webp",
-    "https://media.giphy.com/media/qwRD72MbIOWdy/giphy.webp",
-  ];
-
   let solana;
   let inputValue;
   let gifList = [];
-  $: console.log("gifList", gifList);
 
   async function getGifList() {
     console.log("Fetching GIF list...");
@@ -87,10 +77,45 @@
     }
   }
 
-  async function connectPhantom() {
-    const response = await solana.connect({ onlyIfTrusted: true });
-    console.log("Connected with Public Key:", response.publicKey.toString());
-    walletAddress.set(response.publicKey.toString());
+  async function connectTrustedWallet() {
+    if (solana?.isPhantom) {
+      const response = await solana.connect({ onlyIfTrusted: true });
+      notifications.success("👻 Reconnected wallet! 👻 ", 3000);
+      console.log(
+        "Connected with Public Key:",
+        shortenAddress(response.publicKey.toString())
+      );
+      currentStatus.set(shortenAddress(response.publicKey.toString()));
+      walletAddress.set(response.publicKey.toString());
+    } else {
+      notifications.danger(
+        "Solana object not found! Get a Phantom Wallet 👻",
+        3000
+      );
+    }
+  }
+
+  async function handleConnectWallet() {
+    if (solana?.isPhantom) {
+      console.log("solana.connect");
+      const response = await solana.connect();
+      notifications.success(
+        `Connected with Public Key: ${shortenAddress(
+          response.publicKey.toString()
+        )}`
+      );
+      console.log(
+        "Connected with Public Key:",
+        shortenAddress(response.publicKey.toString())
+      );
+      currentStatus.set(shortenAddress(response.publicKey.toString()));
+      walletAddress.set(response.publicKey.toString());
+    } else {
+      notifications.danger(
+        "Solana object not found! Get a Phantom Wallet 👻",
+        3000
+      );
+    }
   }
 
   function getProvider() {
@@ -116,6 +141,7 @@
         },
         signers: [baseAccount],
       });
+      notifications.info("Created a new BaseAccount!", 3000);
       console.log(
         "Created a new BaseAccount w/ address:",
         baseAccount.publicKey.toString()
@@ -123,67 +149,75 @@
       const gifs = await getGifList();
       gifList = gifs;
     } catch (error) {
+      notifications.danger("Please approve the transaction 👻", 3000);
       console.log("Error creating BaseAccount account:", error);
     }
   }
   onMount(async () => {
     solana = window?.solana;
-    if (solana?.isPhantom) {
-      console.log("Phantom wallet found!");
+    if (solana) {
+      connectTrustedWallet();
     } else {
-      console.log("Solana object not found! Get a Phantom Wallet 👻");
+      notifications.info(
+        "Solana object not found! Get a Phantom Wallet 👻",
+        3000
+      );
     }
   });
 </script>
 
 <main>
-  <div class="container">
-    <div class={$walletAddress ? "authed-container" : "container"}>
-      <div class="header-container">
-        <p class="header">🖼 Monty Python GIF Portal</p>
-        <p class="sub-text">View your Monty GIF collection ✨</p>
-      </div>
-      {#if !$walletAddress}
-        <button
-          class="cta-button connect-wallet-button"
-          on:click={connectPhantom}
-        >
-          Connect to Wallet
-        </button>
-      {:else}
-        <div class="connected-container">
-          <form on:submit|preventDefault={handleSubmitLink}>
-            <input
-              type="text"
-              placeholder="Enter gif link!"
-              bind:value={inputValue}
-            />
-            <button type="submit" class="cta-button submit-gif-button"
-              >Submit</button
-            >
-          </form>
+  <div>
+    <Toast />
+    <div class="header-text">🖼️ Devnet GIF Gallery 🖼️</div>
+    <div class="sub-text">✨ Monty Python Collection ✨</div>
+    <div class="status">
+      <span class="status-text gradient-text"
+        >🔗 Wallet: {$currentStatus} 🔗</span
+      >
+    </div>
 
-          {#if gifList?.length > 0}
-            <div class="gif-grid">
-              {#each gifList as { gifLink }}
-                <div class="gif-item">
-                  <img src={gifLink} alt={gifLink} />
-                </div>
-              {/each}
-            </div>
-          {:else}
-            <div class="connected-container">
-              <button
-                class="cta-button submit-gif-button"
-                on:click={createGifAccount}
-              >
-                Do One-Time Initialization For GIF Program Account
-              </button>
-            </div>
-          {/if}
+    {#if !$walletAddress}
+      <div style="text-align: center;">
+        <button
+          class="cta-button connect-button"
+          on:click={handleConnectWallet}
+        >
+          Connect to Phantom
+        </button>
+      </div>
+    {:else}
+      <div style="text-align: center;">
+        <form on:submit|preventDefault={handleSubmitLink}>
+          <input
+            type="text"
+            placeholder="Submit gif link!"
+            bind:value={inputValue}
+          />
+          <button type="submit" class="cta-button submit-button"
+            >Submit GIF Link</button
+          >
+        </form>
+      </div>
+      {#if !gifList}
+        <div style="text-align: center;">
+          <button class="cta-button connect-button" on:click={createGifAccount}>
+            Create GIF Account
+          </button>
         </div>
       {/if}
-      <div class="footer-container" />
-    </div>
+    {/if}
+  </div>
+
+  <div style="margin: 2rem; width: 90vw;">
+    {#if gifList?.length > 0}
+      <div class="gif-grid">
+        {#each gifList as { gifLink }}
+          <div class="gif-item">
+            <img src={gifLink} alt={gifLink} />
+          </div>
+        {/each}
+      </div>
+    {/if}
   </div>
 </main>

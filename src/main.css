@@ -1,5 +1,19 @@
-main {
-  height: 100vh;
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+    sans-serif;
   background: linear-gradient(
       217deg,
       rgba(255, 0, 0, 0.8),
@@ -7,35 +21,46 @@ main {
     ),
     linear-gradient(127deg, rgba(0, 255, 0, 0.8), rgba(0, 255, 0, 0) 70.71%),
     linear-gradient(336deg, rgba(0, 0, 255, 0.8), rgba(0, 0, 255, 0) 70.71%);
+  background-attachment: fixed;
   overflow: scroll;
-  text-align: center;
-  font-family: "Biryani";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100%;
 }
 
-.container {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding: 0 30px 0 30px;
+main {
+  display: grid;
+  place-items: center;
+  min-height: 90vh;
 }
 
-.authed-container {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  padding: 30px;
-}
-
-.header {
-  margin: 0;
+.header-text {
+  padding-top: 1rem;
+  padding-bottom: 1rem;
   font-size: 50px;
   font-weight: bold;
   color: white;
 }
 
 .sub-text {
+  padding-bottom: 2rem;
   font-size: 25px;
+  text-align: center;
+  color: white;
+}
+
+.status {
+  border-radius: 0.2rem;
+  padding: 0.4rem;
+  text-align: center;
+  background-color: #425164;
+  opacity: 0.5;
+  margin-bottom: 2rem;
+}
+
+.status-text {
+  font-size: 16px;
+  text-align: center;
   color: white;
 }
 
@@ -49,7 +74,6 @@ main {
 .cta-button {
   height: 45px;
   border: 0;
-  width: auto;
   padding-left: 40px;
   padding-right: 40px;
   border-radius: 10px;
@@ -57,41 +81,22 @@ main {
   font-size: 16px;
   font-weight: bold;
   color: white;
+  max-width: 300px;
+  box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
 }
 
-.connect-wallet-button {
+.connect-button {
   background: -webkit-linear-gradient(left, #60c657, #35aee2);
   background-size: 200% 200%;
   animation: gradient-animation 4s ease infinite;
+  box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
 }
 
-.submit-gif-button {
+.submit-button {
   background: -webkit-linear-gradient(left, #4e44ce, #35aee2);
   background-size: 200% 200%;
   animation: gradient-animation 4s ease infinite;
   margin-left: 10px;
-}
-
-.footer-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: absolute;
-  width: 100%;
-  bottom: 0;
-  left: 0;
-  padding-bottom: 45px;
-}
-
-.twitter-logo {
-  width: 35px;
-  height: 35px;
-}
-
-.footer-text {
-  color: white;
-  font-size: 16px;
-  font-weight: bold;
 }
 
 .gif-grid {
@@ -103,7 +108,7 @@ main {
   padding: 0;
 }
 
-.gif-grid .gif-item {
+.gif-item {
   display: flex;
   flex-direction: column;
   position: relative;
@@ -118,20 +123,18 @@ main {
   object-fit: cover;
 }
 
-.connected-container input[type="text"] {
+input[type="text"] {
   display: inline-block;
-  color: white;
+  color: #252e3a;
   padding: 10px;
-  width: 50%;
-  height: 60px;
+  height: 45px;
+  width: 60%;
   font-size: 16px;
   box-sizing: border-box;
-  background-color: rgba(0, 0, 0, 0.25);
   border: none;
   border-radius: 10px;
-  margin: 50px auto;
 }
 
-.connected-container button {
-  height: 50px;
+input[type="text"]:focus {
+  outline: 3px solid transparent;
 }
