@@ -1,18 +1,18 @@
 <script>
-  import { onMount } from "svelte";
-  import { Buffer } from "buffer";
+  import { onMount } from 'svelte';
+  import { Buffer } from 'buffer';
   window.Buffer = Buffer;
 
-  import Toast from "./lib/Toast.svelte";
-  import { notifications } from "./lib/notificationStore";
-  import { walletAddress, currentStatus } from "./stores";
-  import { shortenAddress } from "./utils";
+  import Toast from './lib/Toast.svelte';
+  import { notifications } from './lib/notificationStore';
+  import { walletAddress, currentStatus } from './stores';
+  import { shortenAddress } from './utils';
 
-  import * as solanaWeb3 from "@solana/web3.js";
-  import * as anchorWeb3 from "@project-serum/anchor";
+  import * as solanaWeb3 from '@solana/web3.js';
+  import * as anchorWeb3 from '@project-serum/anchor';
 
-  import kp from "./keypair.json";
-  import idl from "./idl.json";
+  import kp from './keypair.json';
+  import idl from './idl.json';
 
   // SystemProgram is a reference to the Solana runtime!
   const { SystemProgram, Connection, PublicKey, clusterApiUrl } = solanaWeb3;
@@ -23,11 +23,11 @@
   const baseAccount = web3.Keypair.fromSecretKey(secret);
 
   const programID = new PublicKey(idl.metadata.address);
-  const network = clusterApiUrl("devnet");
+  const network = clusterApiUrl('devnet');
 
   // Controls how we want to acknowledge when a transaction is "done".
   const opts = {
-    preflightCommitment: "processed",
+    preflightCommitment: 'processed'
   };
 
   let solana;
@@ -35,27 +35,27 @@
   let gifList = [];
 
   async function getGifList() {
-    console.log("Fetching GIF list...");
+    console.log('Fetching GIF list...');
     try {
       const provider = getProvider();
       const program = new Program(idl, programID, provider);
       const account = await program.account.baseAccount.fetch(
         baseAccount.publicKey
       );
-      console.log("Got the account", account);
+      console.log('Got the account', account);
       return account?.gifList || null;
     } catch (error) {
-      console.log("Error in getGifList: ", error);
+      console.log('Error in getGifList: ', error);
       return null;
     }
   }
 
   async function handleSubmitLink() {
     if (inputValue.length === 0) {
-      console.log("Empty input. Try again.");
+      console.log('Empty input. Try again.');
       return;
     }
-    console.log("Gif link:", inputValue);
+    console.log('Gif link:', inputValue);
     try {
       const provider = getProvider();
       const program = new Program(idl, programID, provider);
@@ -63,33 +63,33 @@
       await program.rpc.addGif(inputValue, {
         accounts: {
           baseAccount: baseAccount.publicKey,
-          user: provider.wallet.publicKey,
-        },
+          user: provider.wallet.publicKey
+        }
       });
-      console.log("GIF successfully sent to program", inputValue);
+      console.log('GIF successfully sent to program', inputValue);
 
       const gifs = await getGifList();
       gifList = gifs;
 
-      inputValue = "";
+      inputValue = '';
     } catch (error) {
-      console.log("Error sending GIF:", error);
+      console.log('Error sending GIF:', error);
     }
   }
 
   async function connectTrustedWallet() {
     if (solana?.isPhantom) {
       const response = await solana.connect({ onlyIfTrusted: true });
-      notifications.success("👻 Reconnected wallet! 👻 ", 3000);
+      notifications.success('👻 Reconnected wallet! 👻 ', 3000);
       console.log(
-        "Connected with Public Key:",
+        'Connected with Public Key:',
         shortenAddress(response.publicKey.toString())
       );
       currentStatus.set(shortenAddress(response.publicKey.toString()));
       walletAddress.set(response.publicKey.toString());
     } else {
       notifications.danger(
-        "Solana object not found! Get a Phantom Wallet 👻",
+        'Solana object not found! Get a Phantom Wallet 👻',
         3000
       );
     }
@@ -97,7 +97,7 @@
 
   async function handleConnectWallet() {
     if (solana?.isPhantom) {
-      console.log("solana.connect");
+      console.log('solana.connect');
       const response = await solana.connect();
       notifications.success(
         `Connected with Public Key: ${shortenAddress(
@@ -105,14 +105,14 @@
         )}`
       );
       console.log(
-        "Connected with Public Key:",
+        'Connected with Public Key:',
         shortenAddress(response.publicKey.toString())
       );
       currentStatus.set(shortenAddress(response.publicKey.toString()));
       walletAddress.set(response.publicKey.toString());
     } else {
       notifications.danger(
-        "Solana object not found! Get a Phantom Wallet 👻",
+        'Solana object not found! Get a Phantom Wallet 👻',
         3000
       );
     }
@@ -132,25 +132,25 @@
     try {
       const provider = getProvider();
       const program = new Program(idl, programID, provider);
-      console.log("ping");
+      console.log('ping');
       await program.rpc.initialize({
         accounts: {
           baseAccount: baseAccount.publicKey,
           user: provider.wallet.publicKey,
-          systemProgram: SystemProgram.programId,
+          systemProgram: SystemProgram.programId
         },
-        signers: [baseAccount],
+        signers: [baseAccount]
       });
-      notifications.info("Created a new BaseAccount!", 3000);
+      notifications.info('Created a new BaseAccount!', 3000);
       console.log(
-        "Created a new BaseAccount w/ address:",
+        'Created a new BaseAccount w/ address:',
         baseAccount.publicKey.toString()
       );
       const gifs = await getGifList();
       gifList = gifs;
     } catch (error) {
-      notifications.danger("Please approve the transaction 👻", 3000);
-      console.log("Error creating BaseAccount account:", error);
+      notifications.danger('Please approve the transaction 👻', 3000);
+      console.log('Error creating BaseAccount account:', error);
     }
   }
   onMount(async () => {
@@ -159,7 +159,7 @@
       connectTrustedWallet();
     } else {
       notifications.info(
-        "Solana object not found! Get a Phantom Wallet 👻",
+        'Solana object not found! Get a Phantom Wallet 👻',
         3000
       );
     }
@@ -172,9 +172,9 @@
     <div class="header-text">🖼️ Devnet GIF Gallery 🖼️</div>
     <div class="sub-text">✨ Monty Python Collection ✨</div>
     <div class="status">
-      <span class="status-text gradient-text"
-        >🔗 Wallet: {$currentStatus} 🔗</span
-      >
+      <span class="status-text gradient-text">
+        🔗 Wallet: {$currentStatus} 🔗
+      </span>
     </div>
 
     {#if !$walletAddress}
@@ -194,9 +194,9 @@
             placeholder="Submit gif link!"
             bind:value={inputValue}
           />
-          <button type="submit" class="cta-button submit-button"
-            >Submit GIF Link</button
-          >
+          <button type="submit" class="cta-button submit-button">
+            Submit GIF Link
+          </button>
         </form>
       </div>
       {#if !gifList}

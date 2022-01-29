@@ -1,14 +1,14 @@
 <script>
-  import { flip } from "svelte/animate";
-  import { fly } from "svelte/transition";
-  import { notifications } from "./notificationStore";
+  import { flip } from 'svelte/animate';
+  import { fly } from 'svelte/transition';
+  import { notifications } from './notificationStore';
 
   export let themes = {
-    danger: "#E26D69",
-    success: "#84C991",
-    warning: "#f0ad4e",
-    info: "#5bc0de",
-    default: "#aaaaaa",
+    danger: '#E26D69',
+    success: '#84C991',
+    warning: '#f0ad4e',
+    info: '#5bc0de',
+    default: '#aaaaaa'
   };
 </script>
 
@@ -20,8 +20,12 @@
       style="background: {themes[notification.type]};"
       transition:fly={{ y: 30 }}
     >
-      <div class="content">{notification.message}</div>
-      {#if notification.icon}<i class={notification.icon} />{/if}
+      <div class="content">
+        {notification.message}
+      </div>
+      {#if notification.icon}
+        <i class={notification.icon} />
+      {/if}
     </div>
   {/each}
 </div>
